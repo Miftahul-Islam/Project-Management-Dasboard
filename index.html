@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#e94560">
+    <meta name="description" content="ClientFlow - Manage clients, projects, and invoices">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ClientFlow">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231a1a2e' width='100' height='100' rx='20'/><text x='50' y='65' font-size='50' text-anchor='middle' fill='%23e94560'>◈</text></svg>">
+    <title>ClientFlow — Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Grain Overlay -->
+    <div class="grain-overlay"></div>
+    
+    <!-- Offline Indicator -->
+    <div id="offlineIndicator" class="offline-indicator">
+        📴 You're offline - Changes will sync when connected
+    </div>
+    
+    <!-- Login Screen -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-container">
+            <div class="login-header">
+                <span class="login-logo">◈</span>
+                <h1>ClientFlow</h1>
+                <p>Enter your password to access the dashboard</p>
+            </div>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <input type="password" id="loginPassword" placeholder="Password" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Unlock Dashboard</button>
+                <p class="login-error" id="loginError">Incorrect password. Please try again.</p>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <span class="logo-icon">◈</span>
+                <span class="logo-text">ClientFlow</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-page="dashboard">
+                <span class="nav-icon">⊞</span>
+                <span class="nav-text">Dashboard</span>
+            </a>
+            <a href="#" class="nav-item" data-page="clients">
+                <span class="nav-icon">👤</span>
+                <span class="nav-text">Clients</span>
+            </a>
+            <a href="#" class="nav-item" data-page="projects">
+                <span class="nav-icon">📁</span>
+                <span class="nav-text">Projects</span>
+            </a>
+            <a href="#" class="nav-item" data-page="invoices">
+                <span class="nav-icon">📄</span>
+                <span class="nav-text">Invoices</span>
+            </a>
+            <a href="#" class="nav-item" data-page="analytics">
+                <span class="nav-icon">📊</span>
+                <span class="nav-text">Analytics</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar">E</div>
+                <div class="user-details">
+                    <span class="user-name">Efaz</span>
+                    <span class="user-role">Admin</span>
+                </div>
+            </div>
+            <button class="logout-btn" id="settingsBtn" title="Settings" style="margin-bottom: 0.5rem;">
+                <span>⚙️ Settings</span>
+            </button>
+            <button class="logout-btn" id="logoutBtn" title="Logout">
+                <span>Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <button class="menu-toggle" id="menuToggle">☰</button>
+            <div class="header-search">
+                <input type="text" placeholder="Search clients, projects..." id="globalSearch">
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary" id="quickAddBtn">
+                    <span>+</span> Quick Add
+                </button>
+            </div>
+        </header>
+
+        <!-- Dashboard Page -->
+        <section class="page active" id="dashboardPage">
+            <div class="page-header">
+                <h1>Dashboard</h1>
+                <p class="page-subtitle">Welcome back! Here's your business overview.</p>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon clients-icon">👤</div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="totalClients">0</span>
+                        <span class="stat-label">Total Clients</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon projects-icon">📁</div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="activeProjects">0</span>
+                        <span class="stat-label">Active Projects</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon completed-icon">✓</div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="completedProjects">0</span>
+                        <span class="stat-label">Completed</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon revenue-icon">$</div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="totalRevenue">$0</span>
+                        <span class="stat-label">Total Revenue</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity & Quick Actions -->
+            <div class="dashboard-grid">
+                <div class="card recent-clients">
+                    <div class="card-header">
+                        <h3>Recent Clients</h3>
+                        <a href="#" class="view-all" data-page="clients">View All →</a>
+                    </div>
+                    <div class="card-content" id="recentClientsList">
+                        <p class="empty-state">No clients yet. Add your first client!</p>
+                    </div>
+                </div>
+                <div class="card recent-projects">
+                    <div class="card-header">
+                        <h3>Recent Projects</h3>
+                        <a href="#" class="view-all" data-page="projects">View All →</a>
+                    </div>
+                    <div class="card-content" id="recentProjectsList">
+                        <p class="empty-state">No projects yet. Add your first project!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Projects Overview & Pending Invoices -->
+            <div class="dashboard-grid">
+                <div class="card projects-overview">
+                    <div class="card-header">
+                        <h3>Projects Overview</h3>
+                    </div>
+                    <div class="card-content">
+                        <canvas id="projectsOverviewChart"></canvas>
+                    </div>
+                </div>
+                <div class="card pending-invoices">
+                    <div class="card-header">
+                        <h3>Pending Invoices</h3>
+                        <a href="#" class="view-all" data-page="invoices">View All →</a>
+                    </div>
+                    <div class="card-content" id="pendingInvoicesList">
+                        <p class="empty-state">No pending invoices.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Revenue Chart -->
+            <div class="card chart-card">
+                <div class="card-header">
+                    <h3>Revenue Overview</h3>
+                    <select id="chartPeriod" class="chart-select">
+                        <option value="6">Last 6 Months</option>
+                        <option value="12">Last 12 Months</option>
+                    </select>
+                </div>
+                <div class="card-content">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Clients Page -->
+        <section class="page" id="clientsPage">
+            <div class="page-header">
+                <h1>Clients</h1>
+                <button class="btn btn-primary" id="addClientBtn">+ Add Client</button>
+            </div>
+            <div class="table-container">
+                <table class="data-table" id="clientsTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Company</th>
+                            <th>Projects</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientsTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Projects Page -->
+        <section class="page" id="projectsPage">
+            <div class="page-header">
+                <h1>Projects</h1>
+                <button class="btn btn-primary" id="addProjectBtn">+ Add Project</button>
+            </div>
+            <div class="table-container">
+                <table class="data-table" id="projectsTable">
+                    <thead>
+                        <tr>
+                            <th>Project Name</th>
+                            <th>Client</th>
+                            <th>Value</th>
+                            <th>Status</th>
+                            <th>Start Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projectsTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Invoices Page -->
+        <section class="page" id="invoicesPage">
+            <div class="page-header">
+                <h1>Invoices</h1>
+                <button class="btn btn-primary" id="createInvoiceBtn">+ Create Invoice</button>
+            </div>
+            <div class="table-container">
+                <table class="data-table" id="invoicesTable">
+                    <thead>
+                        <tr>
+                            <th>Invoice #</th>
+                            <th>Client</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoicesTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Analytics Page -->
+        <section class="page" id="analyticsPage">
+            <div class="page-header">
+                <h1>Analytics</h1>
+                <button class="btn btn-secondary" id="exportReportBtn">↓ Export Report</button>
+            </div>
+            <div class="analytics-grid">
+                <div class="card">
+                    <div class="card-header"><h3>Monthly Revenue</h3></div>
+                    <div class="card-content"><canvas id="monthlyRevenueChart"></canvas></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h3>Project Status</h3></div>
+                    <div class="card-content"><canvas id="projectStatusChart"></canvas></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h3>Payment Status</h3></div>
+                    <div class="card-content"><canvas id="paymentStatusChart"></canvas></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h3>Top Clients by Revenue</h3></div>
+                    <div class="card-content" id="topClientsList"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modals -->
+    <!-- Client Modal -->
+    <div class="modal" id="clientModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="clientModalTitle">Add Client</h2>
+                <button class="modal-close" data-modal="clientModal">×</button>
+            </div>
+            <form id="clientForm">
+                <input type="hidden" id="clientId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Name *</label>
+                        <input type="text" id="clientName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" id="clientEmail" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="tel" id="clientPhone">
+                    </div>
+                    <div class="form-group">
+                        <label>Company</label>
+                        <input type="text" id="clientCompany">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Address</label>
+                    <textarea id="clientAddress" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Notes <span class="ai-hint">✨ AI available</span></label>
+                    <div class="ai-textarea-wrapper">
+                        <textarea id="clientNotes" rows="2"></textarea>
+                        <button type="button" class="ai-btn" data-target="clientNotes">
+                            <span class="ai-icon">✨</span>
+                            <span>Organize with AI</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="clientStatus">
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-modal="clientModal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Client</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Project Modal -->
+    <div class="modal" id="projectModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="projectModalTitle">Add Project</h2>
+                <button class="modal-close" data-modal="projectModal">×</button>
+            </div>
+            <form id="projectForm">
+                <input type="hidden" id="projectId">
+                <div class="form-group">
+                    <label>Project Name *</label>
+                    <input type="text" id="projectName" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Client *</label>
+                        <select id="projectClient" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="projectStatus">
+                            <option value="active">Active</option>
+                            <option value="on-hold">On Hold</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Value ($)</label>
+                        <input type="number" id="projectValue" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Currency</label>
+                        <select id="projectCurrency">
+                            <option value="USD">USD ($)</option>
+                            <option value="TK">TK (৳)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" id="projectStartDate">
+                    </div>
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <input type="date" id="projectEndDate">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Description <span class="ai-hint">✨ AI available</span></label>
+                    <div class="ai-textarea-wrapper">
+                        <textarea id="projectDescription" rows="3"></textarea>
+                        <button type="button" class="ai-btn" data-target="projectDescription">
+                            <span class="ai-icon">✨</span>
+                            <span>Organize with AI</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-modal="projectModal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Invoice Modal -->
+    <div class="modal" id="invoiceModal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2 id="invoiceModalTitle">Create Invoice</h2>
+                <button class="modal-close" data-modal="invoiceModal">×</button>
+            </div>
+            <form id="invoiceForm">
+                <input type="hidden" id="invoiceId">
+                <div class="invoice-layout">
+                    <div class="invoice-details">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Client *</label>
+                                <select id="invoiceClient" required></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Currency</label>
+                                <select id="invoiceCurrency">
+                                    <option value="USD">USD ($)</option>
+                                    <option value="TK">TK (৳)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Invoice Date</label>
+                                <input type="date" id="invoiceDate">
+                            </div>
+                            <div class="form-group">
+                                <label>Due Date</label>
+                                <input type="date" id="invoiceDueDate">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Payment Status</label>
+                            <select id="invoicePaymentStatus">
+                                <option value="pending">Pending</option>
+                                <option value="paid">Paid</option>
+                                <option value="overdue">Overdue</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Invoice Items -->
+                        <div class="invoice-items-section">
+                            <h4>Invoice Items</h4>
+                            <div id="invoiceItems">
+                                <div class="invoice-item">
+                                    <input type="text" placeholder="Description" class="item-desc">
+                                    <input type="number" placeholder="Qty" class="item-qty" value="1">
+                                    <input type="number" placeholder="Price" class="item-price" step="0.01">
+                                    <span class="item-total">$0.00</span>
+                                    <button type="button" class="btn-icon remove-item">×</button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-secondary" id="addItemBtn">+ Add Item</button>
+                        </div>
+
+                        <div class="invoice-totals">
+                            <div class="total-row">
+                                <span>Subtotal:</span>
+                                <span id="invoiceSubtotal">$0.00</span>
+                            </div>
+                            <div class="total-row">
+                                <span>Tax (%):</span>
+                                <input type="number" id="invoiceTax" value="0" step="0.1">
+                            </div>
+                            <div class="total-row total-final">
+                                <span>Total:</span>
+                                <span id="invoiceTotal">$0.00</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Notes <span class="ai-hint">✨ AI available</span></label>
+                            <div class="ai-textarea-wrapper">
+                                <textarea id="invoiceNotes" rows="2" placeholder="Payment terms, bank details, etc."></textarea>
+                                <button type="button" class="ai-btn" data-target="invoiceNotes">
+                                    <span class="ai-icon">✨</span>
+                                    <span>Organize with AI</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-modal="invoiceModal">Cancel</button>
+                    <button type="button" class="btn btn-secondary" id="previewInvoiceBtn">Preview</button>
+                    <button type="submit" class="btn btn-primary">Save Invoice</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Invoice Preview Modal -->
+    <div class="modal" id="invoicePreviewModal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Invoice Preview</h2>
+                <button class="modal-close" data-modal="invoicePreviewModal">×</button>
+            </div>
+            <div id="invoicePreviewContent" class="invoice-preview"></div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" data-modal="invoicePreviewModal">Close</button>
+                <button type="button" class="btn btn-primary" id="downloadPdfBtn">↓ Download PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Add Modal -->
+    <div class="modal" id="quickAddModal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h2>Quick Add</h2>
+                <button class="modal-close" data-modal="quickAddModal">×</button>
+            </div>
+            <div class="quick-add-options">
+                <button class="quick-add-btn" data-type="client">
+                    <span class="quick-icon">👤</span>
+                    <span>New Client</span>
+                </button>
+                <button class="quick-add-btn" data-type="project">
+                    <span class="quick-icon">📁</span>
+                    <span>New Project</span>
+                </button>
+                <button class="quick-add-btn" data-type="invoice">
+                    <span class="quick-icon">📄</span>
+                    <span>New Invoice</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙️ Settings</h2>
+                <button class="modal-close" data-modal="settingsModal">×</button>
+            </div>
+            <form id="settingsForm">
+                <div class="form-group">
+                    <label for="groqApiKey">🤖 Groq API Key</label>
+                    <input type="password" id="groqApiKey" placeholder="Enter your Groq API key">
+                    <small>Used for AI-powered text organization. Get your key from <a href="https://console.groq.com/keys" target="_blank">console.groq.com</a></small>
+                </div>
+                <div class="form-group">
+                    <label for="businessName">Business Name</label>
+                    <input type="text" id="businessName" placeholder="Your Business Name">
+                </div>
+                <div class="form-group">
+                    <label for="businessEmail">Business Email</label>
+                    <input type="email" id="businessEmail" placeholder="your@email.com">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('settingsModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span class="toast-message"></span>
+    </div>
+    
+    <!-- Offline Indicator -->
+    <div class="offline-indicator" id="offlineIndicator">
+        <span>📡 You're offline</span>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
