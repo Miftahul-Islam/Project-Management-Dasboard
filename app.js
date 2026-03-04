@@ -1507,10 +1507,12 @@ function renderAnalytics() {
     renderRevenueChart();
     renderProjectStatusChart();
     renderClientDistribution();
+    renderProjectsOverview();
 }
 
 let revenueChart = null;
 let projectStatusChart = null;
+let projectsOverviewChart = null;
 
 function renderRevenueChart() {
     const ctx = document.getElementById('revenueChart');
@@ -1623,6 +1625,105 @@ function renderClientDistribution() {
             </div>
         `;
     }).join('') || '<p style="color: var(--text-muted);">No data yet</p>';
+}
+
+function renderProjectsOverview() {
+    const ctx = document.getElementById('projectsOverviewChart');
+    if (!ctx) return;
+    
+    // Get active projects sorted by value
+    const activeProjects = DB.projects
+        .filter(p => p.status === 'active')
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 6);
+    
+    if (activeProjects.length === 0) {
+        ctx.parentElement.innerHTML = '<p class="empty-state">No active projects to display</p>';
+        return;
+    }
+    
+    const labels = activeProjects.map(p => {
+        const client = DB.clients.find(c => c.id === p.client_id);
+        return p.name.length > 15 ? p.name.substring(0, 15) + '...' : p.name;
+    });
+    
+    const values = activeProjects.map(p => p.value);
+    const currencies = activeProjects.map(p => p.currency);
+    
+    // Calculate days remaining for each project
+    const progressData = activeProjects.map(p => {
+        if (!p.start_date || !p.end_date) return 50;
+        const start = new Date(p.start_date);
+        const end = new Date(p.end_date);
+        const today = new Date();
+        const total = (end - start) / (1000 * 60 * 60 * 24);
+        const elapsed = (today - start) / (1000 * 60 * 60 * 24);
+        if (total <= 0) return 100;
+        return Math.min(100, Math.max(0, (elapsed / total) * 100));
+    });
+    
+    if (projectsOverviewChart) projectsOverviewChart.destroy();
+    
+    projectsOverviewChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Project Value',
+                data: values,
+                backgroundColor: activeProjects.map((p, i) => {
+                    const colors = [
+                        'rgba(233, 69, 96, 0.8)',
+                        'rgba(42, 157, 143, 0.8)',
+                        'rgba(244, 162, 97, 0.8)',
+                        'rgba(107, 114, 128, 0.8)',
+                        'rgba(59, 130, 246, 0.8)',
+                        'rgba(168, 85, 247, 0.8)'
+                    ];
+                    return colors[i % colors.length];
+                }),
+                borderColor: 'transparent',
+                borderRadius: 6,
+                barThickness: 28
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: (context) => {
+                            const project = activeProjects[context.dataIndex];
+                            const progress = progressData[context.dataIndex];
+                            return [
+                                `Value: ${formatCurrency(context.raw, project.currency)}`,
+                                `Progress: ${progress.toFixed(0)}%`
+                            ];
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    ticks: {
+                        callback: value => '$' + value.toLocaleString(),
+                        color: '#9ca3af'
+                    }
+                },
+                y: {
+                    grid: { display: false },
+                    ticks: { color: '#e5e7eb' }
+                }
+            }
+        }
+    });
 }
 
 // ================================================
