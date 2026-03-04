@@ -116,64 +116,46 @@ function addToOfflineQueue(item) {
 let deferredPrompt = null;
 
 function initPWA() {
+    const installBtn = document.getElementById('installAppBtn');
+    
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        showInstallBanner();
+        // Show install button on mobile
+        if (window.innerWidth <= 768 && installBtn) {
+            installBtn.style.display = 'inline-flex';
+        }
     });
     
     window.addEventListener('appinstalled', () => {
         deferredPrompt = null;
-        hideInstallBanner();
+        if (installBtn) {
+            installBtn.style.display = 'none';
+        }
         showToast('App installed successfully!');
     });
-}
-
-function showInstallBanner() {
-    // Check if already dismissed
-    if (localStorage.getItem('cf_install_dismissed')) return;
     
-    let banner = document.getElementById('installBanner');
-    if (!banner) {
-        banner = document.createElement('div');
-        banner.id = 'installBanner';
-        banner.className = 'install-banner';
-        banner.innerHTML = `
-            <div class="install-content">
-                <span class="install-icon">📱</span>
-                <div class="install-text">
-                    <strong>Install ClientFlow</strong>
-                    <p>Add to home screen for quick access</p>
-                </div>
-                <button class="install-btn" id="installBtn">Install</button>
-                <button class="install-dismiss" id="dismissInstall">×</button>
-            </div>
-        `;
-        document.body.appendChild(banner);
-        
-        document.getElementById('installBtn').addEventListener('click', async () => {
+    // Handle install button click
+    if (installBtn) {
+        installBtn.addEventListener('click', async () => {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
                 if (outcome === 'accepted') {
-                    hideInstallBanner();
+                    installBtn.style.display = 'none';
                 }
+                deferredPrompt = null;
+            } else {
+                // Fallback instructions for iOS
+                showToast('Tap the share button and select "Add to Home Screen"');
             }
-        });
-        
-        document.getElementById('dismissInstall').addEventListener('click', () => {
-            hideInstallBanner();
-            localStorage.setItem('cf_install_dismissed', 'true');
         });
     }
     
-    setTimeout(() => banner.classList.add('show'), 1000);
-}
-
-function hideInstallBanner() {
-    const banner = document.getElementById('installBanner');
-    if (banner) {
-        banner.classList.remove('show');
+    // Check if running as installed PWA
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+        console.log('Running as installed PWA');
+        if (installBtn) installBtn.style.display = 'none';
     }
 }
 
@@ -793,6 +775,11 @@ function setupEventListeners() {
     // Menu toggle
     document.getElementById('menuToggle').addEventListener('click', () => {
         document.getElementById('sidebar').classList.toggle('open');
+    });
+    
+    // Sidebar overlay click to close
+    document.getElementById('sidebarOverlay').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.remove('open');
     });
     
     // Modals

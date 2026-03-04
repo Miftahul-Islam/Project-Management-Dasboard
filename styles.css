@@ -1066,6 +1066,7 @@ form {
 @media (max-width: 768px) {
     .sidebar {
         transform: translateX(-100%);
+        width: 280px;
     }
     
     .sidebar.open {
@@ -1081,11 +1082,28 @@ form {
     }
     
     .stats-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
     }
     
     .page {
         padding: 1rem;
+    }
+    
+    .page-header {
+        margin-bottom: 1.5rem;
+    }
+    
+    .page-header h1 {
+        font-size: 1.5rem;
     }
     
     .form-row {
@@ -1095,6 +1113,13 @@ form {
     .data-table {
         display: block;
         overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.875rem;
     }
     
     .invoice-item {
@@ -1108,6 +1133,164 @@ form {
     
     .header-search {
         display: none;
+    }
+    
+    .header-actions {
+        gap: 0.5rem;
+    }
+    
+    .btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+    }
+    
+    .modal-content {
+        width: 95%;
+        max-width: none;
+        max-height: 90vh;
+        overflow-y: auto;
+        margin: 0 auto;
+    }
+    
+    .modal-header h2 {
+        font-size: 1.25rem;
+    }
+    
+    .card {
+        padding: 1rem;
+    }
+    
+    .card-header h3 {
+        font-size: 1rem;
+    }
+    
+    /* Show install button on mobile */
+    .btn-install {
+        display: inline-flex !important;
+        background: linear-gradient(135deg, var(--accent-warm), var(--accent-coral));
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        align-items: center;
+        gap: 0.5rem;
+        animation: pulse 2s infinite;
+    }
+    
+    .btn-install:hover {
+        transform: scale(1.05);
+    }
+    
+    /* Client list items - mobile */
+    .client-list-item,
+    .project-list-item,
+    .invoice-list-item {
+        padding: 0.75rem;
+    }
+    
+    /* Form groups - mobile */
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-group label {
+        font-size: 0.875rem;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+    
+    /* Quick add buttons - mobile */
+    .quick-add-options {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Sidebar overlay */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 99;
+    }
+    
+    .sidebar.open + .sidebar-overlay {
+        display: block;
+    }
+    
+    /* Tables responsive */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Dashboard cards */
+    .dashboard-grid .card {
+        min-height: auto;
+    }
+    
+    /* Charts */
+    .chart-container {
+        height: 250px !important;
+    }
+    
+    /* Navigation text hide on very small screens */
+    .nav-item span {
+        display: inline;
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .page-header h1 {
+        font-size: 1.25rem;
+    }
+    
+    .quick-add-btn {
+        padding: 1rem;
+    }
+    
+    .quick-icon {
+        font-size: 1.5rem;
+    }
+    
+    .btn-install span:first-child {
+        display: none;
+    }
+    
+    .btn-install {
+        padding: 0.5rem 0.75rem;
+        animation: none;
+    }
+    
+    .header-actions .btn-primary span {
+        display: none;
+    }
+    
+    .data-table th:nth-child(3),
+    .data-table td:nth-child(3),
+    .data-table th:nth-child(4),
+    .data-table td:nth-child(4) {
+        display: none;
+    }
+}
+
+/* Desktop - hide install button */
+@media (min-width: 769px) {
+    .btn-install {
+        display: none !important;
     }
 }
 
